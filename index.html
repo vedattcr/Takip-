@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Davet Evi Takip</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1B2E28">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Davet Evi Takip">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand-row">
+      <div>
+        <div class="brand">Davet Evi <em>Takip</em></div>
+        <p class="subtitle">Rezervasyon takip defteri</p>
+        <p class="credit">byTacarMedia</p>
+      </div>
+      <div class="count-pill" id="countPill">0 kayıt</div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="pkg-manage-btn" id="openPackagesBtn">Paketlerim</button>
+      <button type="button" class="pkg-manage-btn" id="exportBtn">Yedekle</button>
+      <button type="button" class="pkg-manage-btn" id="importBtn">İçe Aktar</button>
+      <input type="file" id="importFileInput" accept="application/json" hidden>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="view-toggle" id="viewToggle" role="tablist" aria-label="Görünüm seç">
+      <button data-view="list" aria-pressed="true">Liste</button>
+      <button data-view="calendar" aria-pressed="false">Takvim</button>
+      <button data-view="report" aria-pressed="false">Rapor</button>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="İsim veya pakete göre ara…" aria-label="Ara">
+    </div>
+    <div class="filter-row" id="filterRow" role="tablist" aria-label="Duruma göre filtrele">
+      <button class="filter-chip" data-filter="all" aria-pressed="true">Tümü</button>
+      <button class="filter-chip" data-filter="confirmed" aria-pressed="false">Kesin Rezervasyon</button>
+      <button class="filter-chip" data-filter="tentative" aria-pressed="false">Ön Görüşme</button>
+      <button class="filter-chip" data-filter="pay-pending" aria-pressed="false">Ödeme Bekliyor</button>
+    </div>
+  </div>
+
+  <section class="calendar" id="calendarView" hidden>
+    <div class="cal-head">
+      <button class="cal-nav" id="calPrev" aria-label="Önceki ay">‹</button>
+      <div class="cal-month" id="calMonthLabel"></div>
+      <button class="cal-nav" id="calNext" aria-label="Sonraki ay">›</button>
+    </div>
+    <div class="cal-weekdays">
+      <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-day-panel" id="calDayPanel"></div>
+  </section>
+
+  <section class="report" id="reportView" hidden>
+    <div class="cal-head">
+      <button class="cal-nav" id="reportPrev" aria-label="Önceki ay">‹</button>
+      <div class="cal-month" id="reportMonthLabel"></div>
+      <button class="cal-nav" id="reportNext" aria-label="Sonraki ay">›</button>
+    </div>
+    <div id="reportBody"></div>
+  </section>
+
+  <main class="list" id="list"></main>
+
+  <button class="fab" id="openAddBtn">
+    <span class="plus">+</span> Yeni Rezervasyon Ekle
+  </button>
+
+  <div class="scrim" id="scrim"></div>
+
+  <section class="sheet" id="sheet" aria-hidden="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="sheetTitle">Yeni Rezervasyon</div>
+      <button class="sheet-close" id="closeSheetBtn">Kapat</button>
+    </div>
+    <div class="sheet-body">
+      <form id="reservationForm">
+        <div class="two-col">
+          <div class="field">
+            <label for="brideName">Gelin Adı Soyadı</label>
+            <input type="text" id="brideName" placeholder="örn. Elif Yılmaz" required>
+          </div>
+          <div class="field">
+            <label for="groomName">Damat Adı Soyadı</label>
+            <input type="text" id="groomName" placeholder="örn. Emre Kaya" required>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="field">
+            <label for="phone">Telefon</label>
+            <input type="tel" id="phone" placeholder="05xx xxx xx xx">
+          </div>
+          <div class="field">
+            <label for="email">E-posta</label>
+            <input type="email" id="email" placeholder="ornek@eposta.com">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="eventType">Etkinlik Türü</label>
+          <select id="eventType">
+            <option value="Nişan">Nişan</option>
+            <option value="Kına">Kına</option>
+            <option value="Düğün">Düğün</option>
+            <option value="Bekarlığa Veda">Bekarlığa Veda</option>
+            <option value="Doğum Günü">Doğum Günü</option>
+            <option value="Baby Shower">Baby Shower</option>
+            <option value="Toplantı">Toplantı</option>
+            <option value="Diğer">Diğer</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="package">Seçilen Paket</label>
+          <select id="package"></select>
+        </div>
+
+        <div class="two-col">
+          <div class="field">
+            <label for="eventDate">Etkinlik Tarihi</label>
+            <input type="date" id="eventDate" required>
+          </div>
+          <div class="field">
+            <label for="eventTime">Etkinlik Saati</label>
+            <select id="eventTime" required>
+              <option value="10:00-12:00">10:00 - 12:00</option>
+              <option value="14:00-17:00">14:00 - 17:00</option>
+              <option value="19:00-22:00">19:00 - 22:00</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-error" id="timeSlotError" hidden>Bu tarihte bu saat aralığı zaten dolu. Lütfen başka bir saat aralığı seçin.</div>
+
+        <div class="two-col">
+          <div class="field">
+            <label for="price">Paket Fiyatı (₺)</label>
+            <input type="number" id="price" min="0" step="0.01" placeholder="örn. 45000" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="deposit">Alınan Kapora (₺)</label>
+            <input type="number" id="deposit" min="0" step="0.01" placeholder="örn. 15000" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Kalan Tutar</label>
+          <div class="remaining-display" id="remainingDisplay">₺0</div>
+        </div>
+
+        <div class="field">
+          <label>Ödeme Durumu</label>
+          <div class="status-toggle" id="paymentToggle">
+            <button type="button" data-value="pending" aria-pressed="true">Bekliyor</button>
+            <button type="button" data-value="partial" aria-pressed="false">Kapora Alındı</button>
+            <button type="button" data-value="paid" aria-pressed="false">Tamamlandı</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Rezervasyon Durumu</label>
+          <div class="status-toggle" id="confirmToggle">
+            <button type="button" data-value="tentative" aria-pressed="true">Ön Görüşme</button>
+            <button type="button" data-value="confirmed" aria-pressed="false">Kesin Rezervasyon</button>
+          </div>
+        </div>
+
+        <div class="expenses-block" id="expensesSection" hidden>
+          <div class="expenses-heading">Giderler <span class="expenses-hint">kesin rezervasyon için</span></div>
+          <div class="two-col">
+            <div class="field">
+              <label for="expPhotographer">Fotoğrafçı (₺)</label>
+              <input type="number" id="expPhotographer" min="0" step="0.01" placeholder="0">
+            </div>
+            <div class="field">
+              <label for="expCake">Pastacı (₺)</label>
+              <input type="number" id="expCake" min="0" step="0.01" placeholder="0">
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label for="expDrinks">İçecek (₺)</label>
+              <input type="number" id="expDrinks" min="0" step="0.01" placeholder="0">
+            </div>
+            <div class="field">
+              <label for="expSnacks">Çerez (₺)</label>
+              <input type="number" id="expSnacks" min="0" step="0.01" placeholder="0">
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label for="expMirror">Ayna (₺)</label>
+              <input type="number" id="expMirror" min="0" step="0.01" placeholder="0">
+            </div>
+            <div class="field">
+              <label for="expRibbon">İncili Kurdele (₺)</label>
+              <input type="number" id="expRibbon" min="0" step="0.01" placeholder="0">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="expStaff">Personel (₺)</label>
+            <input type="number" id="expStaff" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="expense-summary" id="expenseSummaryDisplay">Toplam Gider: ₺0 · Net Kâr: ₺0</div>
+        </div>
+
+        <div class="field">
+          <label for="notes">Açıklama</label>
+          <textarea id="notes" placeholder="Özel istekler, notlar…"></textarea>
+        </div>
+
+        <div class="sheet-actions">
+          <button type="button" class="btn danger" id="deleteBtn" style="display:none;">Sil</button>
+          <button type="button" class="btn ghost" id="cancelBtn">Vazgeç</button>
+          <button type="submit" class="btn primary" id="saveBtn">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="sheet" id="packageSheet" aria-hidden="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-title">Paketlerim</div>
+      <button class="sheet-close" id="closePackageSheetBtn">Kapat</button>
+    </div>
+    <div class="sheet-body">
+      <div class="pkg-list" id="pkgList"></div>
+      <button type="button" class="btn primary" id="addPkgBtn" style="width:100%;">+ Yeni Paket Ekle</button>
+
+      <form id="packageForm" hidden style="margin-top:18px;">
+        <div class="field">
+          <label for="pkgName">Paket Adı</label>
+          <input type="text" id="pkgName" placeholder="örn. Ekonomik Paket" required>
+        </div>
+        <div class="field">
+          <label for="pkgDescription">Paket İçeriği</label>
+          <textarea id="pkgDescription" placeholder="Bu pakete dahil olan hizmetleri yazın…"></textarea>
+        </div>
+        <div class="field">
+          <label for="pkgPrice">Fiyat (₺)</label>
+          <input type="number" id="pkgPrice" min="0" step="0.01" placeholder="örn. 30000" inputmode="decimal">
+        </div>
+        <div class="sheet-actions">
+          <button type="button" class="btn danger" id="deletePkgBtn" style="display:none;">Sil</button>
+          <button type="button" class="btn ghost" id="cancelPkgBtn">Vazgeç</button>
+          <button type="submit" class="btn primary" id="savePkgBtn">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
